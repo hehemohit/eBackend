@@ -150,7 +150,7 @@ app.use('/api/v1/bids', require('./routes/bids'));
 app.use('/api/v1/verification', require('./routes/verification'));
 app.use('/api/v1/notifications', require('./routes/notifications'));
 app.use('/api/v1/wholesaler-listings', require('./routes/wholesalerListings'));
-app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/v1/inventory', require('./routes/inventory'));
 app.use('/api/v1/tickets', require('./routes/tickets'));
 
 // Error handling middleware
