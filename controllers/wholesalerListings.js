@@ -203,21 +203,21 @@ const createListing = async (req, res) => {
     await listing.populate('originalBid', 'amount');
     await listing.populate('originalProduce', 'name description category');
 
-    // Add to centralized inventory via API call
+    // Add to centralized inventory directly
     try {
-        const inventoryResponse = await fetch('http://localhost:5000/api/inventory', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      const InventoryItem = require('../models/InventoryItem');
+      
+      const existingInvItem = await InventoryItem.findOne({ listingId: listing._id });
+      if (!existingInvItem) {
+        const invItem = new InventoryItem({
           listingId: listing._id,
           produceName: listing.produceName,
-          description: listing.description,
+          description: listing.description || bid.produce.description || '',
           price: listing.price,
-          images: listing.images,
-          category: listing.category,
-          quantity: listing.quantity,
+          images: listing.images || [],
+          category: listing.category || 'other',
+          quantity: listing.quantity || 1,
+          status: 'available',
           wholesaler: {
             id: listing.wholesaler._id,
             name: listing.wholesaler.name,
@@ -226,13 +226,9 @@ const createListing = async (req, res) => {
             phone: listing.wholesaler.phone
           },
           deliveryOptions: listing.deliveryOptions
-        })
-      });
-      
-      if (inventoryResponse.ok) {
-        console.log('✅ Added listing to centralized inventory:', listing.produceName);
-      } else {
-        console.error('Failed to add listing to centralized inventory');
+        });
+        await invItem.save();
+        console.log('✅ Added listing to centralized inventory directly:', listing.produceName);
       }
     } catch (error) {
       console.error('Error adding listing to centralized inventory:', error);
